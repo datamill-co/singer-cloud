@@ -1,0 +1,64 @@
+version: 1
+cloud:
+  provider: aws-ecs
+  ecs_cluster_name: singer
+  bucket_name: some-bucket
+taps:
+  tap-salesforce:
+    repo: git@github.com:singer-io/tap-salesforce.git
+    default_singer_config:
+      start_date: 2010-01-01T00:00:00Z
+      api_type: BULK
+      select_fields_by_default: true
+      client_id: 50f0676f76117269baeaed2ee07979986711b79
+      client_secret: secret://sf/client_secret
+      disable_collection: true
+  tap-stripe:
+    repo: git@github.com:singer-io/tap-stripe.git
+    default_singer_config:
+      start_date: 2010-01-01T00:00:00Z
+      disable_collection: true
+targets:
+  target-postgres:
+    repo: git@github.com:datamill-co/target-postgres.git
+    default_singer_config:
+      postgres_host: warehouse.someawsaccount.us-east-1.rds.amazonaws.com
+      postgres_database: prod
+      postgres_username: singer
+      postgres_password: secret://warehouse/password
+      disable_collection: true
+pipelines:
+  sf_sales:
+    schedule: 0 3 * * *
+    tap_config:
+      tap: tap-salesforce
+      singer_config:
+        refresh_token: secret://sf_sales/refresh_token
+      catalog: s3://some-bucket/singer/catalogs/sf_sales.json
+    target_config:
+      target: target-postgres
+      singer_config:
+        postgres_schema: sf_sales
+  sf_marketing:
+    schedule: 0 4 * * *
+    tap_config:
+      tap: tap-salesforce
+      singer_config:
+        refresh_token: secret://sf_marketing/refresh_token
+      catalog: s3://some-bucket/singer/catalogs/sf_marketing.json
+    target_config:
+      target: target-postgres
+      singer_config:
+        postgres_schema: sf_marketing
+  stripe:
+    schedule: 0 3 * * *
+    tap_config:
+      tap: tap-stripe
+      singer_config:
+        client_secret: secret://stripe/client_secret
+        account_id: acct_a1b2c4d5e6f7g8h9
+      catalog: s3://some-bucket/singer/catalogs/stripe.json
+    target_config:
+      target: target-postgres
+      singer_config:
+        postgres_schema: stripe

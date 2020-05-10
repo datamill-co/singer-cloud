@@ -1,0 +1,1 @@
+from singer_cloud.cli import main
