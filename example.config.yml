@@ -1,32 +1,31 @@
 version: 1
+name: my-singer-cloud
 cloud:
-  provider: aws-ecs
-  ecs_cluster_name: singer
+  provider: aws
   bucket_name: some-bucket
+  region: us-east-1
+global_shared_config:
+  start_date: 2010-01-01T00:00:00Z
+  disable_collection: true
 taps:
   tap-salesforce:
-    repo: git@github.com:singer-io/tap-salesforce.git
+    repo: https://github.com/singer-io/tap-salesforce.git
     default_singer_config:
-      start_date: 2010-01-01T00:00:00Z
       api_type: BULK
       select_fields_by_default: true
       client_id: 50f0676f76117269baeaed2ee07979986711b79
       client_secret: secret://sf/client_secret
       disable_collection: true
   tap-stripe:
-    repo: git@github.com:singer-io/tap-stripe.git
-    default_singer_config:
-      start_date: 2010-01-01T00:00:00Z
-      disable_collection: true
+    repo: https://github.com/singer-io/tap-stripe.git
 targets:
   target-postgres:
-    repo: git@github.com:datamill-co/target-postgres.git
+    repo: https://github.com/datamill-co/target-postgres.git
     default_singer_config:
       postgres_host: warehouse.someawsaccount.us-east-1.rds.amazonaws.com
       postgres_database: prod
       postgres_username: singer
       postgres_password: secret://warehouse/password
-      disable_collection: true
 pipelines:
   sf_sales:
     schedule: 0 3 * * *

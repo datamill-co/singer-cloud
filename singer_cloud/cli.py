@@ -34,6 +34,8 @@ def init_logging(context=None, debug=False, log_level=logging.INFO):
 
     sys.excepthook = exception_handler
 
+    return logger
+
 @click.group()
 def main():
     pass
@@ -49,16 +51,28 @@ def init(config_path, debug):
 
 @main.command('update', help='Update a singer-cloud instance')
 @click.argument('config-path')
+@click.option('--force-new-image', is_flag=True)
+@click.option('--no-docker-cache', is_flag=True)
 @click.option('--debug', is_flag=True)
-def update(config_path, debug):
+def update(config_path, force_new_image, no_docker_cache, debug):
+    logger = init_logging()
+
     from singer_cloud.docker import sync_container_image
+    from singer_cloud.providers import get_provider
 
     with open(config_path) as file:
         config = load(file, Loader=Loader)
 
     ## TODO: validate config
+    ## TODO: config changes? eg refresh tokens
 
-    sync_container_image(config)
+    provider = get_provider(logger, config)
+
+    sync_container_image(logger,
+                         provider,
+                         config,
+                         force_new_image=force_new_image,
+                         no_cache=no_docker_cache)
 
 @main.command('discover', help='Discover the tap catalog for a Singer pipeline')
 @click.argument('pipeline-name')
