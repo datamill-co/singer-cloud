@@ -15,7 +15,6 @@ taps:
       select_fields_by_default: true
       client_id: 50f0676f76117269baeaed2ee07979986711b79
       client_secret: secret://sf/client_secret
-      disable_collection: true
   tap-stripe:
     repo: https://github.com/singer-io/tap-stripe.git
 targets:
